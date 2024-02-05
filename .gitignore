@@ -1,0 +1,10 @@
+*.bin
+*.asm
+obj/*
+files_hash
+temp*
+perf.data*
+compile_commands.json
+.cache
+
+old*

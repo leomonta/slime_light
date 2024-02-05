@@ -1,0 +1,43 @@
+{
+	"compiler": {
+		"compiler_style": "gcc",
+		"compiler_exe": "g++",
+		"linker_exe": "g++"
+	},
+	
+	"directories": {
+		"project_dir": ".",
+		"exe_path_name": "bin/Game.bin",
+		"include_dirs": [
+			"include",
+			"ext"
+		],
+		"source_dirs": [
+			"src"
+		],
+		"temp_dir": "obj"
+	},
+
+	"defaults": {
+		"libraries_names": [
+			"raylib",
+			"dl",
+			"pthread"
+		]
+	},
+
+	"debug": {
+		"compiler_args": "-g3 -std=c++2a -Og -Wno-missing-field-initializers -Wno-unknown-pragmas -Wall -Wconversion -Wshadow -Wextra -fsanitize=address -fsanitize=leak",
+		"linker_args": "-fsanitize=address -fsanitize=leak"
+	},
+
+	"no-asan": {
+		"compiler_args": "-g3 -std=c++2a -Og -Wno-missing-field-initializers -Wno-unknown-pragmas -Wall -Wconversion -Wshadow -Wextra",
+		"linker_args": ""
+	},
+
+	"release": {
+		"compiler_args": "-std=c++2a -Ofast",
+		"linker_args": "-flto"
+	}
+}
