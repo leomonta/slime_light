@@ -1,5 +1,7 @@
 #include "main.h"
 
+#include "input.h"
+
 #include <raylib.h>
 
 struct runtimeSettings {
@@ -32,6 +34,8 @@ void init(runtimeSettings *sett) {
 int main() {
 
 	runtimeSettings settings;
+
+	input_loadConfig(nullptr);
 
 	init(&settings);
 
