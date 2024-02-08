@@ -28,17 +28,19 @@
 #pragma once
 
 typedef enum : char {
-	KCONFIRM,  // Confirm menu choices, advances dialogs
-	KCANCEL,   // Deny menu choices, interrupt dialogs
-	KUP,       // Move up in game and in menu
-	KDOWN,     // Move down in game and in menu
-	KLEFT,     // Move left in game and in menu
-	KRIGHT,    // Move right game and in menu
-	KINTERACT, // Touch, use, talk to entities in game FIXME: might be merged with KCONFIRM
-	KPICKUP,   // Pucks up an item from the ground, TODO: DO NOT MERGE WITH KINTERACT FOR GOD SAKE
-	KINVETORY, // Open Bag / Inventory / Portable hole
-	KMENU,     // Open and closes the game menu
-	KANY       // unknown or other key pressed
+	KCONFIRM,   // Confirm menu choices, advances dialogs
+	KCANCEL,    // Deny menu choices, interrupt dialogs
+	KUP,        // Move up in game and in menu
+	KDOWN,      // Move down in game and in menu
+	KLEFT,      // Move left in game and in menu
+	KRIGHT,     // Move right game and in menu
+	KACTION,    // Attack, use weapon
+	KSECONDARY, // activate weapon secondary effect
+	KINTERACT,  // Touch, use, talk to entities in game FIXME: might be merged with KCONFIRM
+	KPICKUP,    // Pucks up an item from the ground, TODO: DO NOT MERGE WITH KINTERACT FOR GOD SAKE
+	KINVETORY,  // Open Bag / Inventory / Portable hole
+	KMENU,      // Open and closes the game menu
+	KANY        // unknown or other key pressed
 } GAMEPLAY_KEY;
 
 typedef enum : char {

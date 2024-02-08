@@ -16,6 +16,8 @@ const char *GAMEPLAY_KEY_STR[] = {
     "KDOWN",
     "KLEFT",
     "KRIGHT",
+    "KACTION",
+    "KSECONDARY",
     "KINTERACT",
     "KPICKUP",
     "KINVETORY",
@@ -24,25 +26,60 @@ const char *GAMEPLAY_KEY_STR[] = {
 };
 
 const char GAMEPLAY_KEY_LEN[] = {
-    8,
-    7,
-    3,
-    5,
-    5,
-    6,
-    9,
-    7,
-    9,
-    5,
-    4,
+    8,  // KCONFIRM
+    7,  // KCANCEL
+    3,  // KUP
+    5,  // KDOWN
+    5,  // KLEFT
+    6,  // KRIGHT
+    7,  // KACTION
+    10, // KSECONDARY
+    9,  // KINTERACT
+    7,  // KPICKUP
+    9,  // KINVETORY
+    5,  // KMENU
+    4,  // KANY
 };
 
 typedef struct {
-	int  translationTable[KANY];
-	char inputType[KANY];
+	int  translationTable[KANY + 1];
+	char inputType[KANY + 1];
 } keyConfig;
 
 keyConfig currentConfig;
+
+const keyConfig defaultConfig = {
+    {
+     KEY_ENTER,
+     KEY_ESCAPE,
+     KEY_UP,
+     KEY_DOWN,
+     KEY_LEFT,
+     KEY_RIGHT,
+     KEY_SPACE,
+     KEY_R,
+     KEY_E,
+     KEY_P,
+     KEY_I,
+     KEY_ESCAPE,
+     KEY_NULL,
+     },
+    .inputType = {
+     'k',
+     'k',
+     'k',
+     'k',
+     'k',
+     'k',
+     'k',
+     'k',
+     'k',
+     'k',
+     'k',
+     'k',
+     'k',
+     }
+};
 
 int input_loadConfig(const char *filepath) {
 
@@ -50,35 +87,32 @@ int input_loadConfig(const char *filepath) {
 	// -------------------------------------------------------------------------------------------- read file
 	//
 
+	int res = 0;
 	const char *fname = INPUT_CONFIG_FILE;
 
 	if (filepath != nullptr) {
 		fname = filepath;
 	}
 
+	// I use errno to check for errors
 	// just to be sure
 	errno = NO_ERR;
 
-	// I use errno to check for errors
-	auto configFile = fopen(fname, "r");
+	// open and create if does not exists
+	auto configFile = fopen(fname, "a+");
 
-	// file does not exist, err 1
-	if (errno == ENOENT) {
-		return 1;
-	}
-
-	// opening failed for other reasons, err 2
+	// opening failed for other reasons
 	if (errno != NO_ERR) {
-		TraceLog(LOG_ERROR, "File opening failed -> %s\n", strerror(errno));
+		TraceLog(LOG_ERROR, "Input config file opening failed -> %s\n", strerror(errno));
 		fclose(configFile);
-		return 2;
+		return 1;
 	}
 
 	//
 	// -------------------------------------------------------------------------------------------- parse file
 	//
-
-	memset(&currentConfig.inputType, 'k', KANY);
+	
+	currentConfig = defaultConfig;
 
 	// read 256 characters from the file
 	char buffer[INPUT_BUFFER_SIZE] = {0};
@@ -91,6 +125,12 @@ int input_loadConfig(const char *filepath) {
 	while (true) {
 
 		if (fgets(buffer, INPUT_BUFFER_SIZE, configFile) == nullptr) {
+			break;
+		}
+
+		if (errno != NO_ERR) {
+			TraceLog(LOG_ERROR, "Input config file read failed -> %s\n", strerror(errno));
+			res = 1;
 			break;
 		}
 
@@ -150,7 +190,7 @@ int input_loadConfig(const char *filepath) {
 	//
 
 	fclose(configFile);
-	return 0;
+	return res;
 }
 
 int input_writeConfig(const char *filepath) {
@@ -195,8 +235,8 @@ int input_writeConfig(const char *filepath) {
 		fwrite(": ", 1, 2, configFile);                                                // :
 		fwrite(&currentConfig.inputType[i], 1, 1, configFile);                         // input type
 		fwrite("-", 1, 1, configFile);                                                 // -
-		char buffer[3] = {0};                                                          // temp buffer, more than 3 won't be needed ever
-		auto sz        = snprintf(buffer, 3, "%d", currentConfig.translationTable[i]); // convert to string
+		char buffer[4] = {0};                                                          // temp buffer, more than 3 won't be needed ever, the +1 is needed for the '\0'
+		auto sz        = snprintf(buffer, 4, "%d", currentConfig.translationTable[i]); // convert to string
 		fwrite(buffer, 1, sz, configFile);                                             // raylib keycode
 		fwrite("\n", 1, 1, configFile);                                                // newline
 	}
@@ -210,4 +250,16 @@ int input_writeConfig(const char *filepath) {
 }
 
 bool input_isPressed(const GAMEPLAY_KEY k) {
+
+	switch (currentConfig.inputType[k]) {
+	case KEYBOARD:
+		return IsKeyPressed(currentConfig.translationTable[k]);
+		break;
+	case GAMEPAD:
+		break;
+	case MOUSE:
+		break;
+	case AXIS:
+		break;
+	}
 }
