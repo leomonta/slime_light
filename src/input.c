@@ -23,12 +23,15 @@ const char *GAMEPLAY_KEYS_STR[KANY + 1] =
      "KANY"};
 
 typedef struct {
-	int translationTable[KANY + 1];
+	int  translationTable[KANY];
+	char inputOrigin[KANY];
 } keyConfig;
 
 keyConfig currentConfig;
 
 int input_loadConfig(const char *filepath) {
+
+	// -------------------------------------------------------------------------------------------- read file
 
 	const char *fname = INPUT_CONFIG_FILE;
 
@@ -54,12 +57,14 @@ int input_loadConfig(const char *filepath) {
 		return 2;
 	}
 
-	// read 256 characters from the file
-	char buffer [INPUT_CONFIG_FILE_SIZE] = {0};
+	// -------------------------------------------------------------------------------------------- parse file
 
-	unsigned pos   = 0;
-	int      key      = KANY;
-	int      rlKcode  = KEY_NULL;
+	// read 256 characters from the file
+	char buffer[INPUT_CONFIG_FILE_SIZE] = {0};
+
+	unsigned pos     = 0;
+	int      key     = KANY;
+	int      rlKcode = KEY_NULL;
 
 	// search file line by line
 	while (true) {
@@ -84,15 +89,28 @@ int input_loadConfig(const char *filepath) {
 			}
 		}
 
+		temp = strnchr(&buffer[pos], '-', INPUT_CONFIG_FILE_SIZE - pos);
+
+		if (temp == nullptr) {
+			continue;
+		}
+		char medium = *(--temp);
+
+		pos = temp - buffer;
+
 		// no know key found
 		if (key == KANY) {
 			continue;
 		}
+		// +2 to skip the medium and the dash
 
-		rlKcode = atoi(&buffer[pos + 1]);
+		rlKcode = atoi(&buffer[pos + 2]);
 
 		currentConfig.translationTable[key] = rlKcode;
+		currentConfig.inputOrigin[key]      = medium;
 	}
+
+	// -------------------------------------------------------------------------------------------- close file
 
 	fclose(configFile);
 	return 0;

@@ -18,7 +18,7 @@
  * TODO: deal with analog inputs
  * TODO: decide config file format
  *   - TOML
- *   - YAML <- this for now, at least the basic
+ *   - YAML <- this for now, at least the basic key: value
  *   - JSON
  *   - Binary
  *   - Rawdog
