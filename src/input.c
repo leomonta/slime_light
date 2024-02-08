@@ -42,43 +42,19 @@ const char GAMEPLAY_KEY_LEN[] = {
 };
 
 typedef struct {
-	int  translationTable[KANY + 1];
-	char inputType[KANY + 1];
+	int   translationTable[KANY + 1];
+	char  inputType[KANY + 1];
+	float threshold[KANY + 1];
+	int   gamepad;
 } keyConfig;
 
 keyConfig currentConfig;
 
 const keyConfig defaultConfig = {
-    {
-     KEY_ENTER,
-     KEY_ESCAPE,
-     KEY_UP,
-     KEY_DOWN,
-     KEY_LEFT,
-     KEY_RIGHT,
-     KEY_SPACE,
-     KEY_R,
-     KEY_E,
-     KEY_P,
-     KEY_I,
-     KEY_ESCAPE,
-     KEY_NULL,
-     },
-    .inputType = {
-     'k',
-     'k',
-     'k',
-     'k',
-     'k',
-     'k',
-     'k',
-     'k',
-     'k',
-     'k',
-     'k',
-     'k',
-     'k',
-     }
+    {KEY_ENTER, KEY_ESCAPE, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SPACE, KEY_R, KEY_E, KEY_P, KEY_I, KEY_ESCAPE, KEY_NULL},
+    {'k',       'k',        'k',    'k',      'k',      'k',       'k',       'k',   'k',   'k',   'k',   'k',        'k'     },
+    {0.f,       0.f,        0.f,    0.f,      0.f,      0.f,       0.f,       0.f,   0.f,   0.f,   0.f,   0.f,        0.f     },
+    0
 };
 
 int input_loadConfig(const char *filepath) {
@@ -87,7 +63,7 @@ int input_loadConfig(const char *filepath) {
 	// -------------------------------------------------------------------------------------------- read file
 	//
 
-	int res = 0;
+	int         res   = 0;
 	const char *fname = INPUT_CONFIG_FILE;
 
 	if (filepath != nullptr) {
@@ -111,7 +87,7 @@ int input_loadConfig(const char *filepath) {
 	//
 	// -------------------------------------------------------------------------------------------- parse file
 	//
-	
+
 	currentConfig = defaultConfig;
 
 	// read 256 characters from the file
@@ -135,9 +111,9 @@ int input_loadConfig(const char *filepath) {
 		}
 
 		auto temp = strnchr(buffer, ':', INPUT_BUFFER_SIZE);
-		// nothing to see here anymore
+		// empty line it seems
 		if (temp == nullptr) {
-			break;
+			continue;
 		}
 
 		// before the ':'
@@ -183,6 +159,15 @@ int input_loadConfig(const char *filepath) {
 
 		currentConfig.translationTable[key] = rlKcode;
 		currentConfig.inputType[key]        = medium;
+
+		// read threshold if the input is a gamepad axis
+		if (medium != AXIS) {
+			continue;
+		}
+
+		temp = strnchr(&buffer[pos], '-', INPUT_BUFFER_SIZE - pos);
+
+		float ts = atof(&buffer[pos]);
 	}
 
 	//
@@ -255,11 +240,17 @@ bool input_isPressed(const GAMEPLAY_KEY k) {
 	case KEYBOARD:
 		return IsKeyPressed(currentConfig.translationTable[k]);
 		break;
+
 	case GAMEPAD:
+		return IsGamepadButtonPressed(currentConfig.gamepad, currentConfig.translationTable[k]);
 		break;
+
 	case MOUSE:
+		return IsMouseButtonPressed(currentConfig.translationTable[k]);
 		break;
+
 	case AXIS:
+		return GetGamepadAxisMovement(currentConfig.gamepad, currentConfig.translationTable[k]) > currentConfig.threshold[k];
 		break;
 	}
 }

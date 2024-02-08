@@ -1,4 +1,7 @@
 KCONFIRM: k-257
+	kcode: 257
+	type: k
+	threshold: 1.52
 KCANCEL: k-256
 KUP: k-265
 KDOWN: k-264
