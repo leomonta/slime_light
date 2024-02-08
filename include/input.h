@@ -8,9 +8,9 @@
  * TODO: write configuration to file
  * TODO: allow remapping
  * TODO: abstract away gamepad / keyboard
- * TODO: deal with buffering 
+ * TODO: deal with buffering
  *  - Just ask IsKeyPressed() under the hood ?
- *  - use IsKeyDown() instead ? 
+ *  - use IsKeyDown() instead ?
  *  - maintain a buffer internally ?
  *    - keep inputs forever ?
  *    - keep inputs for n frames ?
@@ -39,7 +39,14 @@ typedef enum : char {
 	KINVETORY, // Open Bag / Inventory / Portable hole
 	KMENU,     // Open and closes the game menu
 	KANY       // unknown or other key pressed
-} GAMEPLAY_KEYS;
+} GAMEPLAY_KEY;
+
+typedef enum : char {
+	KEYBOARD = 'k',
+	GAMEPAD  = 'g',
+	MOUSE    = 'm',
+	AXIS     = 'a',
+} INPUT_TYPE;
 
 /**
  * Reads the configured keys form the given file,
@@ -65,4 +72,4 @@ int input_writeConfig(const char *filepath);
  * @param k the the to check for
  * @return true if pressed, false otherwise
  */
-bool input_isPressed(const GAMEPLAY_KEYS k);
+bool input_isPressed(const GAMEPLAY_KEY k);

@@ -51,5 +51,7 @@ int main() {
 		EndDrawing();
 	}
 
+	input_writeConfig(nullptr);
+
 	CloseWindow();
 }
