@@ -78,9 +78,8 @@ int input_loadConfig(const char *filepath) {
 	auto configFile = fopen(fname, "a+");
 
 	// opening failed for other reasons
-	if (errno != NO_ERR) {
+	if (errno != NO_ERR || configFile == NULL) {
 		TraceLog(LOG_ERROR, "Input config file opening failed -> %s\n", strerror(errno));
-		fclose(configFile);
 		return 1;
 	}
 
@@ -196,16 +195,10 @@ int input_writeConfig(const char *filepath) {
 	// I use errno to check for errors
 	auto configFile = fopen(fname, "w");
 
-	// file does not exist, err 1
-	if (errno == ENOENT) {
-		return 1;
-	}
-
 	// opening failed for other reasons, err 2
-	if (errno != NO_ERR) {
+	if (errno != NO_ERR || configFile == NULL) {
 		TraceLog(LOG_ERROR, "File opening failed -> %s\n", strerror(errno));
-		fclose(configFile);
-		return 2;
+		return 1;
 	}
 
 	//

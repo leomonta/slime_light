@@ -32,7 +32,7 @@
 	},
 
 	"analyze": {
-		"compiler_args": "-Og -fanalyzer -Wall -Wno-missing-field-initializers -Wno-unknown-pragmas -Wall -Wconversion -Wshadow -Wextra"
+		"compiler_args": "-Og -std=c2x -fanalyzer -Wall -Wno-missing-field-initializers -Wno-unknown-pragmas -Wall -Wconversion -Wshadow -Wextra"
 	},
 
 	"no-asan": {
