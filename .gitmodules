@@ -1,0 +1,3 @@
+[submoodule "vkl"]
+	path = vkl
+	url = git@github.com:leomonta/VulkanRenderer.git
