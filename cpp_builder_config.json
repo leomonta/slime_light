@@ -20,9 +20,6 @@
 
 	"default": {
 		"libraries_names": [
-			"raylib",
-			"dl",
-			"pthread"
 		]
 	},
 

@@ -2,8 +2,6 @@
 
 #include "input.h"
 
-#include <raylib.h>
-
 struct runtimeSettings {
 	Camera2D camera;
 	unsigned screenWidth;
