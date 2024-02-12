@@ -1,8 +1,8 @@
 {
 	"compiler": {
 		"compiler_style": "gcc",
-		"compiler_exe": "gcc",
-		"linker_exe": "gcc"
+		"compiler_exe": "g++",
+		"linker_exe": "g++"
 	},
 	
 	"directories": {
@@ -10,7 +10,7 @@
 		"exe_path_name": "bin/Game.bin",
 		"include_dirs": [
 			"include",
-			"ext"
+			"vkl"
 		],
 		"source_dirs": [
 			"src"
@@ -19,17 +19,29 @@
 	},
 
 	"default": {
+		"libraries_dirs": [
+			"vkl"
+		],
 		"libraries_names": [
-		]
+			"VulkanRenderer",
+			"vulkan",
+			"glfw",
+			"box2d",
+			"openal",
+			"FLAC"
+		],
+		"scripts": {
+			"pre": "mk"
+		}
 	},
 
 	"debug": {
-		"compiler_args": "-g3 -std=c2x -Wno-missing-field-initializers -Wno-unknown-pragmas -Wall -Wconversion -Wshadow -Wextra -fsanitize=address -fsanitize=leak",
+		"compiler_args": "-g3 -Wno-missing-field-initializers -Wno-unknown-pragmas -Wall -Wconversion -Wshadow -Wextra -fsanitize=address -fsanitize=leak",
 		"linker_args": "-fsanitize=address -fsanitize=leak"
 	},
 
 	"analyze": {
-		"compiler_args": "-Og -std=c2x -fanalyzer -Wall -Wno-missing-field-initializers -Wno-unknown-pragmas -Wall -Wconversion -Wshadow -Wextra"
+		"compiler_args": "-Og -fanalyzer -Wall -Wno-missing-field-initializers -Wno-unknown-pragmas -Wall -Wconversion -Wshadow -Wextra"
 	},
 
 	"no-asan": {

@@ -1,4 +1,4 @@
-#include "utils.h"
+#include "utils.hpp"
 
 bool streq(const char *lhs, const char *rhs) {
 	while (*lhs != '\0' && *rhs != '\0') {

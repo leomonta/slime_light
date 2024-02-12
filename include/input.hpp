@@ -23,7 +23,7 @@
  *   - Binary
  *   - Rawdog
  *
- */
+ *
 
 #pragma once
 
@@ -50,28 +50,29 @@ typedef enum : char {
 	AXIS     = 'a',
 } INPUT_TYPE;
 
-/**
+**
  * Reads the configured keys form the given file,
  * if the filepath is nullptr the default "keyconfig" on the current directory will be used
  *
  *
  * @param filepath the file where to read the configuration from, if nullptr the dafult filepath will be used
  * @return 0 if success, > 0 otherwise
- */
+ *
 int input_loadConfig(const char *filepath);
 
-/**
+**
  * Writes the current configuration to the given file, if filepath is nullptr the default file will be used
  *
  * @param filepath the file where to write the configuration to, if nullptr the default filepath will be used
  * @return 0 if success, 1 otherwise
- */
+ *
 int input_writeConfig(const char *filepath);
 
-/**
+**
  * Returns if the given ket has been pressed
  *
  * @param k the the to check for
  * @return true if pressed, false otherwise
- */
+ *
 bool input_isPressed(const GAMEPLAY_KEY k);
+*/

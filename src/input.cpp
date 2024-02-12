@@ -1,3 +1,4 @@
+/*
 #include "input.h"
 
 #include "constants.h"
@@ -245,4 +246,4 @@ bool input_isPressed(const GAMEPLAY_KEY k) {
 		return GetGamepadAxisMovement(currentConfig.gamepad, currentConfig.translationTable[k]) > currentConfig.threshold[k];
 		break;
 	}
-}
+}*/
