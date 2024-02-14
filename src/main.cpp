@@ -48,8 +48,6 @@ void loop(runtimeEnv& sett) {
 
 	if (!sett.win->shouldClose()) {
 
-		logger::log("ASD");
-
 		/*
 		ClearBackground(BLACK);
 
