@@ -1,18 +1,36 @@
+#include "renderer.hpp"
+
 #include "constants.hpp"
-#include "window/glfwWindow.hpp"
+#include "logger/logger.hpp"
 #include "vulkan.hpp"
-#include <memory>
 
-std::unique_ptr<glfwWindow> createWindow() {
-	std::unique_ptr<glfwWindow> win = std::make_unique<glfwWindow>();
+void initVulkan(VkState &vk) {
+	vk.win = std::make_unique<glfwWindow>();
 
-	win->initWindow({SCREEN_WIDTH, SCREEN_HEIGHT});
+	vk.win->initWindow({SCREEN_WIDTH, SCREEN_HEIGHT});
 
-	auto inst = vksym::createInstance(win.get());
+	auto vki = vksym::createInstance(vk.win.get());
+	if (!vki.has_value()) {
+		logger::log("[INIT] Vulkan Instance could not be created");
+		return;
+	}
 
-	return win;
+	vk.instance = vki.value();
+
+	auto dbm = vksym::setupDebugMessenger(vk.instance);
+
+	if (!dbm.has_value()) {
+		logger::log("[INIT] Debug Messanger, vulkan debug callbakc, could not be created");
+	}
+
+	vk.debugMsg = dbm.value();
 }
 
-void destroyWindow(std::unique_ptr<glfwWindow> &glfwWin){
-	glfwWin->destroyWindow();
+void termVulkan(VkState &vk) {
+	
+	vksym::DestroyDebugUtilsMessengerEXT(vk.instance, vk.debugMsg, nullptr);
+
+	vkDestroyInstance(vk.instance, nullptr);
+
+	vk.win->destroyWindow();
 }

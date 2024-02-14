@@ -2,18 +2,11 @@
 
 #include "input.hpp"
 #include "logger/logger.hpp"
-#include "renderer.hpp"
 
-struct runtimeEnv {
-	std::unique_ptr<glfwWindow> win;
-	unsigned screenWidth;
-	unsigned screenHeight;
-};
-
-void init(runtimeEnv& sett) {
+void init(VkState& sett) {
 
 	// this creates the window by itself
-	sett.win = createWindow();
+	initVulkan(sett);
 
 	/*
 	// ToggleFullscreen();
@@ -30,7 +23,7 @@ void init(runtimeEnv& sett) {
 }
 
 int main() {
-	runtimeEnv settings;
+	VkState settings;
 
 	//input_loadConfig(nullptr);
 
@@ -40,11 +33,11 @@ int main() {
 
 	term(settings);
 	
-	//~glfwWindow()
+	//~glfwWindow() inside vkstate
 
 }
 
-void loop(runtimeEnv& sett) {
+void loop(VkState& sett) {
 
 	if (!sett.win->shouldClose()) {
 
@@ -64,8 +57,8 @@ void loop(runtimeEnv& sett) {
 }
 
 
-void term(runtimeEnv &sett) {
+void term(VkState &sett) {
 	//input_writeConfig(nullptr);
 
-	destroyWindow(sett.win);
+	termVulkan(sett);
 }

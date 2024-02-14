@@ -1,13 +1,13 @@
 #pragma once
 
-typedef struct runtimeEnv runtimeEnv;
+#include "renderer.hpp"
 
 /**
  * init raylib and other stuff
  *
  */
-void init(runtimeEnv& sett);
+void init(VkState& sett);
 
-void loop(runtimeEnv& sett);
+void loop(VkState& sett);
 
-void term(runtimeEnv& sett);
+void term(VkState& sett);
