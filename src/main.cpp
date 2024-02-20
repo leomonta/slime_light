@@ -2,6 +2,7 @@
 
 #include "input.hpp"
 #include "logger/logger.hpp"
+#include <GLFW/glfw3.h>
 
 void init(VkState& sett) {
 

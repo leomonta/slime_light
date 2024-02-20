@@ -19,7 +19,7 @@ void initVulkan(VkState &vk) {
 	}
 
 	vk.instance = vki.value();
-	
+
 	//
 	// -------------------------------------------------------------------------------------------- debug Messanger
 	// to redirect vulkan errors to out logger
@@ -79,15 +79,32 @@ void initVulkan(VkState &vk) {
 	auto vma = vksym::createVMA(vk.instance, vk.phyDev, vk.logDev);
 
 	if (!vma.has_value()) {
-		logger::log("[INIT] Could not create a logical device");
+		logger::log("[INIT] Could not create the logical device");
 		return;
 	}
 
 	vk.vma = vma.value();
 
+	auto swc = vksym::createSwapchain(vk.logDev, vk.phyDev, vk.surface, vk.win.get());
+
+	if (!swc.has_value()) {
+		logger::log("[INIT] Could not create the swap chain");
+		return;
+	}
+
+	vk.swapchain = swc.value().first;
+	vk.scImages  = swc.value().second;
+
+	auto scv = vksym::createSwapchainViews(vk.logDev, vk.scImages);
+	
+	if (!scv.has_value()) {
+		logger::log("[INIT] Could not create the swap chain views");
+		return;
+	}
+
+	vk.scImageViews = scv.value();
+
 	/*
-	if(!tryAssignP<vksym::createSwapchain>(swapchain, swapchainImages, device, physicalDevice, surface, win.get())) return false;
-	if(!tryAssign<vksym::createSwapchainViews>(swapchainImageViews, device, swapchainImages)) return false;
 	if(!tryAssign<vksym::createRenderPass>(renderPass, device, swapchainImages)) return false;
 	if(!tryAssign<vksym::createDescriptorSetLayout>(descriptorSetLayouts, device)) return false;
 	if(!tryAssignP<vksym::createGraphicsPipeline>(pipelineLayout, pipeline, device, swapchainImages, descriptorSetLayouts, renderPass, vertShaderCode, fragShaderCode, sizeof(pushConstantData))) return false;
@@ -152,12 +169,13 @@ void termVulkan(VkState &vk) {
 	    tryNotVkNull<vkDestroyDescriptorSetLayout>(o, device, o, nullptr);
 
 	vkDestroyRenderPass(device, renderPass, nullptr);
-	for(auto o : swapchainImageViews){
-	    tryNotVkNull<vkDestroyImageView>(o, device, o, nullptr);
-	}
-	tryNotVkNull<vkDestroySwapchainKHR>(swapchain, device, swapchain, nullptr);
-
 	*/
+
+	for(auto o : vk.scImageViews){
+		vkDestroyImageView(vk.logDev, o, nullptr);
+	}
+
+	vkDestroySwapchainKHR(vk.logDev, vk.swapchain, nullptr);
 
 	vmaDestroyAllocator(vk.vma);
 

@@ -15,6 +15,10 @@ typedef struct {
 	VkDevice                    logDev;
 	vksym::queues               queues;
 	VmaAllocator                vma;
+	VkSwapchainKHR              swapchain;
+	vksym::swapchainImages      scImages;
+	std::vector<VkImageView>    scImageViews;
+
 } VkState;
 
 void initVulkan(VkState &vk);
