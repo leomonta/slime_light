@@ -76,12 +76,20 @@ void initVulkan(VkState &vk) {
 	vk.logDev = lde.value().first;
 	vk.queues = lde.value().second;
 
+	//
+	// -------------------------------------------------------------------------------------------- VMA
+	// A Vulkan Memory Allocator to efficiently allocate memory for vulkan (duh)
+
 	auto vma = vksym::createVMA(vk.instance, vk.phyDev, vk.logDev);
 
 	if (!vma.has_value()) {
 		logger::log("[INIT] Could not create the logical device");
 		return;
 	}
+	
+	//
+	// -------------------------------------------------------------------------------------------- SwapChain
+	// How to display stuff to the screen
 
 	vk.vma = vma.value();
 
@@ -95,6 +103,10 @@ void initVulkan(VkState &vk) {
 	vk.swapchain = swc.value().first;
 	vk.scImages  = swc.value().second;
 
+	//
+	// -------------------------------------------------------------------------------------------- SwapChain Viwes
+	// How the framebuffer should are formatted and treated
+
 	auto scv = vksym::createSwapchainViews(vk.logDev, vk.scImages);
 	
 	if (!scv.has_value()) {
@@ -104,12 +116,42 @@ void initVulkan(VkState &vk) {
 
 	vk.scImageViews = scv.value();
 
+	//
+	// -------------------------------------------------------------------------------------------- Render pass
+	// How to connnect the pipeline to the framebuffer
+
+	auto rdp = vksym::createRenderPass(vk.logDev, vk.scImages);
+
+	if (!rdp.has_value()) {
+		logger::log("[INIT] Could not create the render pass");
+		return;
+	}
+
+	vk.renderPass = rdp.value();
+
+	//
+	// -------------------------------------------------------------------------------------------- Drescriptor set layout
+	// aka uniforms and their types
+
+	auto dsl = vksym::createDescriptorSetLayout(vk.logDev);
+	
+	if (!dsl.has_value()) {
+		logger::log("[INIT] Could not create the descriptor set layout");
+		return;
+	}
+
+	vk.descSetLayout = dsl.value();
+
+	//
+	// -------------------------------------------------------------------------------------------- graphics pipeline
+	// attach the shaders to the correct stages of the pipeline
+
+	// kinda useless tbh
+	std::vector<uint8_t> fragSource, vertSource;
+	
+	auto ppl = vksym::createGraphicsPipeline(vk.logDev, vk.scImages, vk.descSetLayout, vk.renderPass, vertSource, fragSource, sizeof(pushConstantData));
+
 	/*
-	if(!tryAssign<vksym::createRenderPass>(renderPass, device, swapchainImages)) return false;
-	if(!tryAssign<vksym::createDescriptorSetLayout>(descriptorSetLayouts, device)) return false;
-	if(!tryAssignP<vksym::createGraphicsPipeline>(pipelineLayout, pipeline, device, swapchainImages, descriptorSetLayouts, renderPass, vertShaderCode, fragShaderCode, sizeof(pushConstantData))) return false;
-	vertShaderCode.clear();
-	fragShaderCode.clear();
 	if(!tryAssign<vksym::createCommandPool>(commandPool, device, physicalDevice, surface)) return false;
 	if(!tryAssign<vksym::createFramebuffers>(framebuffers, device, swapchainImages, swapchainImageViews, renderPass)) return false;
 
@@ -168,8 +210,8 @@ void termVulkan(VkState &vk) {
 	for(auto& o : descriptorSetLayouts)
 	    tryNotVkNull<vkDestroyDescriptorSetLayout>(o, device, o, nullptr);
 
-	vkDestroyRenderPass(device, renderPass, nullptr);
-	*/
+*/
+	vkDestroyRenderPass(vk.logDev, vk.renderPass, nullptr);
 
 	for(auto o : vk.scImageViews){
 		vkDestroyImageView(vk.logDev, o, nullptr);
