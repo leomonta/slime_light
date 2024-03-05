@@ -2,6 +2,7 @@
 
 #include "constants.hpp"
 #include "logger/logger.hpp"
+#include "vulkan.hpp"
 
 void initVulkan(VkState &vk) {
 	vk.win = std::make_unique<glfwWindow>();
@@ -86,7 +87,7 @@ void initVulkan(VkState &vk) {
 		logger::log("[INIT] Could not create the logical device");
 		return;
 	}
-	
+
 	//
 	// -------------------------------------------------------------------------------------------- SwapChain
 	// How to display stuff to the screen
@@ -108,7 +109,7 @@ void initVulkan(VkState &vk) {
 	// How the framebuffer should are formatted and treated
 
 	auto scv = vksym::createSwapchainViews(vk.logDev, vk.scImages);
-	
+
 	if (!scv.has_value()) {
 		logger::log("[INIT] Could not create the swap chain views");
 		return;
@@ -134,7 +135,7 @@ void initVulkan(VkState &vk) {
 	// aka uniforms and their types
 
 	auto dsl = vksym::createDescriptorSetLayout(vk.logDev);
-	
+
 	if (!dsl.has_value()) {
 		logger::log("[INIT] Could not create the descriptor set layout");
 		return;
@@ -148,16 +149,102 @@ void initVulkan(VkState &vk) {
 
 	// kinda useless tbh
 	std::vector<uint8_t> fragSource, vertSource;
-	
+
 	auto ppl = vksym::createGraphicsPipeline(vk.logDev, vk.scImages, vk.descSetLayout, vk.renderPass, vertSource, fragSource, sizeof(pushConstantData));
 
-	/*
-	if(!tryAssign<vksym::createCommandPool>(commandPool, device, physicalDevice, surface)) return false;
-	if(!tryAssign<vksym::createFramebuffers>(framebuffers, device, swapchainImages, swapchainImageViews, renderPass)) return false;
+	if (!ppl.has_value()) {
+		logger::log("[INIT] Could not create the graphics pipeline");
+		return;
+	}
 
-	if(!tryAssign<vksym::createSampler>(sampler, device, physicalDevice)) return false;
-	if(!tryAssign<vksym::createVertexBuffers>(vertexBuffers, device, allocator, commandPool, queue.graphicsQueue)) return false;
-	if(!tryAssign<vksym::createIndexBuffers>(indexBuffers, device, allocator, commandPool, queue.graphicsQueue)) return false;
+	vk.pipeline       = ppl.value().second;
+	vk.pipelineLayout = ppl.value().first;
+
+	//
+	// -------------------------------------------------------------------------------------------- Command pool
+	// Where to tell vulkan to do stuff
+
+	auto cmm = vksym::createCommandPool(vk.logDev, vk.phyDev, vk.surface);
+
+	if (!cmm.has_value()) {
+		logger::log("[INIT] Could not create the command pool");
+		return;
+	}
+
+	vk.commandPool = cmm.value();
+
+	//
+	// -------------------------------------------------------------------------------------------- framebuffer
+	// Actually create the framebuffer
+
+	auto frb = vksym::createFramebuffers(vk.logDev, vk.scImages, vk.scImageViews, vk.renderPass);
+
+	if (!frb.has_value()) {
+		logger::log("[INIT] Could not create the framebuffer");
+		return;
+	}
+
+	vk.framebuffers = frb.value();
+
+	//
+	// -------------------------------------------------------------------------------------------- sampler
+	// How to read textures
+
+	auto smp = vksym::createSampler(vk.logDev, vk.phyDev);
+
+	if (!smp.has_value()) {
+		logger::log("[INIT] Could not create the image sampler");
+		return;
+	}
+
+	vk.imageSampler = smp.value();
+
+	//
+	// -------------------------------------------------------------------------------------------- vertex buffer
+	// where the verticies are stored
+
+	auto vxb = vksym::createVertexBuffers(vk.logDev, vk.vma, vk.commandPool, vk.queues.graphicsQueue);
+
+	if (!vxb.has_value()) {
+		logger::log("[INIT] Could not create the vertexBuffer");
+		return;
+	}
+
+	vk.vertBuffers = vxb.value();
+
+	//
+	// -------------------------------------------------------------------------------------------- index buffer
+	// How to read the vertex buffer
+
+	auto ixb = vksym::createIndexBuffers(vk.logDev, vk.vma, vk.commandPool, vk.queues.graphicsQueue);
+
+	if (!ixb.has_value()) {
+		logger::log("[INIT] Could not create the indexBuffer");
+		return;
+	}
+
+	vk.indxBuffers = ixb.value();
+
+	//
+	// -------------------------------------------------------------------------------------------- uniform buffer
+	// Where the uniform data is stored
+
+	auto ufb = vksym::createUniformBuffers(vk.logDev, vk.vma);
+
+	if (!ufb.has_value()) {
+		logger::log("[INIT] Could not create the uniformBuffer");
+		return;
+	}
+
+	vk.unifBuffers = ufb.value();
+
+	//
+	// -------------------------------------------------------------------------------------------- descriptor pool
+	// Where the uniform data is stored
+
+	auto dsp = vksym::createDescriptorPool(vk.logDev);
+
+	/*
 	if(!tryAssign<vksym::createUniformBuffers>(uniformBuffers, device, allocator)) return false;
 	if(!tryAssign<vksym::createDescriptorPool>(descriptorPool, device)) return false;
 	if(deviceProperties.timestampQuarries)
@@ -179,41 +266,41 @@ void termVulkan(VkState &vk) {
 	    tryNotVkNull<vkDestroySemaphore>(o.imageAvailableSem, device, o.renderFinishedSem, nullptr);
 	    tryNotVkNull<vkDestroyFence>(o.inFlightFence, device, o.inFlightFence, nullptr);
 	}
-	tryNotVkNull<vkDestroyCommandPool>(commandPool, device, commandPool, nullptr);
-	for(auto framebuffer : framebuffers){
-	    tryNotVkNull<vkDestroyFramebuffer>(framebuffer, device, framebuffer, nullptr);
-	}
-	tryNotVkNull<vkDestroyPipeline>(pipeline, device, pipeline, nullptr);
-	tryNotVkNull<vkDestroyPipelineLayout>(pipelineLayout, device, pipelineLayout, nullptr);
-	for(size_t i=0;i<vksym::MAX_FRAMES_IN_FLIGHT;i++){
-	    tryNotVkNull<vmaUnmapMemory>(uniformBuffers[i].bufferMemory, allocator, uniformBuffers[i].bufferMemory);
-	    tryNotVkNull<vmaDestroyBuffer>(uniformBuffers[i].buffer, allocator, uniformBuffers[i].buffer, uniformBuffers[i].bufferMemory);
-	}
-
-	for(unsigned int i=0;i<indexBuffers.size();i++)
-	    if(indexBuffers[i].buffer != VK_NULL_HANDLE)
-	        tryNotVkNull<vmaDestroyBuffer>(indexBuffers[i].buffer, allocator, indexBuffers[i].buffer, indexBuffers[i].bufferMemory);
-
-	for(unsigned int i=0;i<vertexBuffers.size();i++)
-	    if(vertexBuffers[i].buffer != VK_NULL_HANDLE)
-	        tryNotVkNull<vmaDestroyBuffer>(vertexBuffers[i].buffer, allocator, vertexBuffers[i].buffer, vertexBuffers[i].bufferMemory);
-
-	tryNotVkNull<vkDestroySampler>(sampler, device, sampler, nullptr);
-	for(auto& o : textures)
-	    o->cleanup(device, allocator);
 
 	tryNotVkNull<vkDestroyDescriptorPool>(descriptorPool, device, descriptorPool, nullptr);
-
 	if(deviceProperties.timestampQuarries)
 	    tryNotVkNull<vkDestroyQueryPool>(queryPool, device, queryPool, nullptr);
 
-	for(auto& o : descriptorSetLayouts)
-	    tryNotVkNull<vkDestroyDescriptorSetLayout>(o, device, o, nullptr);
-
 */
+	for (size_t i = 0; i < vksym::MAX_FRAMES_IN_FLIGHT; ++i) {
+		vmaUnmapMemory(vk.vma, vk.unifBuffers[i].bufferMemory);
+		vmaDestroyBuffer(vk.vma, vk.unifBuffers[i].buffer, vk.unifBuffers[i].bufferMemory);
+	}
+
+	for (unsigned int i = 0; i < vk.indxBuffers.size(); ++i)
+		vmaDestroyBuffer(vk.vma, vk.indxBuffers[i].buffer, vk.indxBuffers[i].bufferMemory);
+
+	for (unsigned int i = 0; i < vk.vertBuffers.size(); ++i)
+		vmaDestroyBuffer(vk.vma, vk.vertBuffers[i].buffer, vk.vertBuffers[i].bufferMemory);
+
+	vkDestroySampler(vk.logDev, vk.imageSampler, nullptr);
+
+	for (auto fb : vk.framebuffers) {
+		vkDestroyFramebuffer(vk.logDev, fb, nullptr);
+	}
+
+	vkDestroyPipelineLayout(vk.logDev, vk.pipelineLayout, nullptr);
+	vkDestroyPipeline(vk.logDev, vk.pipeline, nullptr);
+
+	vkDestroyCommandPool(vk.logDev, vk.commandPool, nullptr);
+
+	for (auto &o : vk.descSetLayout) {
+		vkDestroyDescriptorSetLayout(vk.logDev, o, nullptr);
+	}
+
 	vkDestroyRenderPass(vk.logDev, vk.renderPass, nullptr);
 
-	for(auto o : vk.scImageViews){
+	for (auto o : vk.scImageViews) {
 		vkDestroyImageView(vk.logDev, o, nullptr);
 	}
 
